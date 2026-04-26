@@ -190,6 +190,9 @@ def _beam_sample(model: GPT, prompt: list[int], max_new_tokens: int,
     for _ in range(max_new_tokens - 1):
         if not beams:
             break
+        # Stop if we've reached the model's context limit
+        if cur_len >= block_size - 1:
+            break
         all_candidates = []
 
         for log_prob, seq, beam_kvs in beams:
