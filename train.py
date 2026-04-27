@@ -89,7 +89,7 @@ class OnTheFlyDataset(Dataset):
                 # Sample op uniformly and set both op and op_ so that
                 # gen_param_light uses the op-aware branch (s = self.op),
                 # ensuring high-op samples can actually be generated.
-                new_op = random.randint(1, self.id_gen.max_op)
+                new_op = self.id_gen.gen_sol_op("light")
                 self.id_gen.op  = new_op
                 self.id_gen.op_ = new_op
                 self.id_gen.perm_level_ = (random.randint(0, 6)

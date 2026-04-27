@@ -46,13 +46,15 @@ def _worker(args):
     failed = 0
     for i in range(n_samples):
         try:
-            # Sample op uniformly so all op values 1..max_op are equally
-            # represented.  Crucially we also set id_gen.op (the constructor-
-            # level attribute) so that gen_param_light uses the correct branch
-            # (self.s = self.op) rather than the min(t0,t1) branch, which
-            # would make high-op samples essentially impossible to generate.
-            new_op = random.randint(1, max_op)
-            id_gen.op  = new_op   # makes gen_param set s = new_op
+            # Sample op using the paper's "light" distribution (min(t0,t1)),
+            # which biases toward smaller op values — matching the training
+            # distribution described in the paper.
+            # Crucially we also set id_gen.op (the constructor-level attribute)
+            # so that gen_param_light takes the self.op != None branch
+            # (self.s = self.op) rather than re-sampling s = min(t0,t1),
+            # which would make high-op samples essentially impossible to generate.
+            new_op = id_gen.gen_sol_op("light")
+            id_gen.op  = new_op
             id_gen.op_ = new_op
             id_gen.perm_level_  = (random.randint(0, 6)  if id_gen.perm_level  is None
                                    else id_gen.perm_level)
@@ -107,7 +109,7 @@ def generate_dataset(
         all_tokens, total_failed = [], 0
         for _ in tqdm(range(num_samples), desc=f"iGSM-{tpy} {split}"):
             try:
-                new_op = random.randint(1, max_op)
+                new_op = id_gen.gen_sol_op("light")
                 id_gen.op  = new_op
                 id_gen.op_ = new_op
                 id_gen.perm_level_   = (random.randint(0, 6)  if id_gen.perm_level  is None
